@@ -1,31 +1,36 @@
 <script>
+  // Runes for Inputs
   let workMin = $state(25);
-  let pauseValue = $state(5);
   let sessions = $state(3);
 
-  let pauseMin = $derived(Math.trunc(Math.ceil(pauseValue * 100) / 100));
+  //Rune for Pause-Time-Calculations, ueses Fractions
+  let pauseValue = $state(5);
+
+  //Runes calculating duration of pauses, uses ceil to avoid round errors in edge-cases
+  let roundedPauseValue = $derived(Math.ceil(pauseValue * 100) / 100);
+  let pauseMin = $derived(Math.trunc(roundedPauseValue));
   let pauseSec = $derived(
-    Math.round(
-      60 *
-        ((Math.ceil(pauseValue * 100) / 100) %
-          Math.trunc(Math.ceil(pauseValue * 100) / 100))
-    )
+    Math.round(60 * (roundedPauseValue % Math.trunc(roundedPauseValue)))
   );
 
+  //Rune calculating Time at wich the worksession ends
   let endTime = $derived.by(() => {
-    let time = Date.now();
-    const prepTime = 600;
+    const TIME = Date.now();
+    const PREP_TIME_SEC = 600;
+    const LONG_PAUSE_FACTOR = 2.5;
+
     let calcWorkSec = workMin * 60;
-    let calcPauseMin = pauseMin * 60 + pauseSec;
+    let calcPauseSec = pauseMin * 60 + pauseSec;
+
     let longPauses = Math.trunc((sessions - 1) / 4);
     let calcPauses = sessions - 1 - longPauses;
 
     let calcEndTime = new Date(
-      time +
-        (prepTime +
+      TIME +
+        (PREP_TIME_SEC +
           calcWorkSec * sessions +
-          calcPauseMin * calcPauses +
-          longPauses * (calcPauseMin * 2.5)) *
+          calcPauseSec * calcPauses +
+          longPauses * (calcPauseSec * LONG_PAUSE_FACTOR)) *
           1000
     );
 
@@ -37,29 +42,30 @@
 </script>
 
 <main>
+  <!--TODO: Encapsulate in Component-->
+
+  <!--Sets Duration of Work-Sessions in min-->
   Work Duration: {workMin}<br />
-  <input
-    type="range"
-    defaultValue="25"
-    step="5"
-    min="15"
-    max="55"
-    bind:value={workMin}
-  /><br /><br />
+  <input type="range" step="5" min="15" max="55" bind:value={workMin} /><br
+  /><br />
+
+  <!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
   Pause Duration {pauseMin}:{pauseSec}<br />
   <input
     type="range"
-    defaultValue="5"
     step="0.0833"
     min="3"
     max="8.008"
     bind:value={pauseValue}
   /><br />
+
+  <!--Sets number of repetitions-->
   Work Sessions<br />
   <input type="number" bind:value={sessions} defaultValue="3" min="1" /><br
   /><br />
 
-  <input type="time" bind:value={endTime} disabled/>
+  <!--Debug: Shows EndTime-->
+  <input type="time" value={endTime} readonly />
 </main>
 
 <style>
