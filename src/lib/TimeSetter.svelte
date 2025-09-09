@@ -1,85 +1,69 @@
 <script>
-  // @ts-nocheck
+  // Constants to avoid magic numbers
+  const PREP_TIME_SEC = 600;
+  const LONG_PAUSE_FACTOR = 2.5;
 
-  let minutes = $state(0);
-  let seconds = $state(0);
+  // Runes for Inputs
+  let workMin = $state(25);
+  let sessions = $state(3);
 
-  function incMinutes() {
-    minutes += 1;
-  }
-  function decMinutes() {
-    if (!(minutes - 1 < 0)) {
-      minutes -= 1;
-    }
-  }
-  function incSeconds() {
-    if (seconds + 5 < 60) {
-      seconds += 5;
-    } else {
-      seconds = 0;
-    }
-  }
-  function decSeconds() {
-    if (!(seconds - 5 < 0)) {
-      seconds -= 5;
-    }
-  }
+  //Rune for Pause-Time-Calculations, ueses Fractions
+  let pauseValue = $state(5);
+
+  //Runes calculating duration of pauses, uses ceil to avoid round errors in edge-cases
+  let roundedPauseValue = $derived(Math.ceil(pauseValue * 100) / 100);
+  let pauseMin = $derived(Math.trunc(roundedPauseValue));
+  let pauseSec = $derived(
+    Math.round(60 * (roundedPauseValue % Math.trunc(roundedPauseValue)))
+  );
+
+  //Rune calculating Time at wich the worksession ends
+  let endTime = $derived.by(() => {
+    const TIME = Date.now();
+
+    let calcWorkSec = workMin * 60;
+    let calcPauseSec = pauseMin * 60 + pauseSec;
+
+    let longPauses = Math.trunc((sessions - 1) / 4);
+    let calcPauses = sessions - 1 - longPauses;
+
+    let calcEndTime = new Date(
+      TIME +
+        (PREP_TIME_SEC +
+          calcWorkSec * sessions +
+          calcPauseSec * calcPauses +
+          longPauses * (calcPauseSec * LONG_PAUSE_FACTOR)) *
+          1000
+    );
+
+    const hours = String(calcEndTime.getHours()).padStart(2, "0");
+    const minutes = String(calcEndTime.getMinutes()).padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+  });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore event_directive_deprecated -->
+<main>
+  <!--Sets Duration of Work-Sessions in min-->
+  Work Duration: {workMin}<br />
+  <input type="range" step="5" min="15" max="55" bind:value={workMin} /><br
+  /><br />
 
-<div class="w-fit bg-secondary grid grid-cols-2 grid-rows-3">
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="h-10 hover:text-amber-50 cursor-pointer"
-    on:click={() => incMinutes()}
-  >
-    <path
-      d="M7 16H5v-2h2v-2h2v-2h2V8h2v2h2v2h2v2h2v2h-2v-2h-2v-2h-2v-2h-2v2H9v2H7v2z"
-      fill="currentColor"
-    />
-  </svg>
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="h-10 hover:text-amber-50 cursor-pointer"
-    on:click={() => incSeconds()}
-  >
-    <path
-      d="M7 16H5v-2h2v-2h2v-2h2V8h2v2h2v2h2v2h2v2h-2v-2h-2v-2h-2v-2h-2v2H9v2H7v2z"
-      fill="currentColor"
-    />
-  </svg>
-  <div class="col-span-2">
-    {#if minutes < 10}0{/if}{minutes}:{#if seconds < 10}0{/if}{seconds}
-  </div>
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="h-10 hover:text-amber-50 cursor-pointer"
-    on:click={() => decMinutes()}
-  >
-    <path
-      d="M7 8H5v2h2v2h2v2h2v2h2v-2h2v-2h2v-2h2V8h-2v2h-2v2h-2v2h-2v-2H9v-2H7V8z"
-      fill="currentColor"
-    />
-  </svg>
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="h-10 hover:text-amber-50 cursor-pointer"
-    on:click={() => decSeconds()}
-  >
-    <path
-      d="M7 8H5v2h2v2h2v2h2v2h2v-2h2v-2h2v-2h2V8h-2v2h-2v2h-2v2h-2v-2H9v-2H7V8z"
-      fill="currentColor"
-    />
-  </svg>
-</div>
+  <!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
+  Pause Duration {pauseMin}:{pauseSec}<br />
+  <input
+    type="range"
+    step="0.0833"
+    min="3"
+    max="8.008"
+    bind:value={pauseValue}
+  /><br />
+
+  <!--Sets number of repetitions-->
+  Work Sessions<br />
+  <input type="number" bind:value={sessions} defaultValue="3" min="1" /><br
+  /><br />
+
+  <!--Debug: Shows EndTime-->
+  <input type="time" value={endTime} readonly />
+</main>
