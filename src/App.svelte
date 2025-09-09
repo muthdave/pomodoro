@@ -1,11 +1,14 @@
 <script>
   import TimeSetter from "./lib/TimeSetter.svelte";
+  import Timer from "./lib/Timer.svelte";
 </script>
 
 <main>
+  <!--
+  Debug -> For later
   <TimeSetter></TimeSetter>
-
-  <!--TODO: Encapsulate in Component-->
+  -->
+  <Timer></Timer>
 </main>
 
 <style>

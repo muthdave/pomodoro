@@ -1,5 +1,7 @@
 <script>
-  // Constants to avoid magic numbers
+
+
+// Constants to avoid magic numbers
   const PREP_TIME_SEC = 600;
   const LONG_PAUSE_FACTOR = 2.5;
 
