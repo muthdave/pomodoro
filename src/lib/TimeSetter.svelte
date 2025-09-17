@@ -1,9 +1,5 @@
 <script>
-
-
-// Constants to avoid magic numbers
-  const PREP_TIME_SEC = 600;
-  const LONG_PAUSE_FACTOR = 2.5;
+  import { PREP_TIME_SEC, LONG_PAUSE_FACTOR } from "../App.svelte";
 
   // Runes for Inputs
   let workMin = $state(25);
@@ -45,27 +41,25 @@
   });
 </script>
 
-<main>
-  <!--Sets Duration of Work-Sessions in min-->
-  Work Duration: {workMin}<br />
-  <input type="range" step="5" min="15" max="55" bind:value={workMin} /><br
-  /><br />
+<!--Sets Duration of Work-Sessions in min-->
+Work Duration: {workMin}<br />
+<input type="range" step="5" min="15" max="55" bind:value={workMin} /><br /><br
+/>
 
-  <!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
-  Pause Duration {pauseMin}:{pauseSec}<br />
-  <input
-    type="range"
-    step="0.0833"
-    min="3"
-    max="8.008"
-    bind:value={pauseValue}
-  /><br />
+<!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
+Pause Duration {pauseMin}:{pauseSec}<br />
+<input
+  type="range"
+  step="0.0833"
+  min="3"
+  max="8.008"
+  bind:value={pauseValue}
+/><br />
 
-  <!--Sets number of repetitions-->
-  Work Sessions<br />
-  <input type="number" bind:value={sessions} defaultValue="3" min="1" /><br
-  /><br />
+<!--Sets number of repetitions-->
+Work Sessions<br />
+<input type="number" bind:value={sessions} defaultValue="3" min="1" /><br /><br
+/>
 
-  <!--Debug: Shows EndTime-->
-  <input type="time" value={endTime} readonly />
-</main>
+<!--Debug: Shows EndTime-->
+<input type="time" value={endTime} readonly />

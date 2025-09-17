@@ -1,4 +1,11 @@
 <script>
+  // Conts to avoid magic numbers
+  import {
+    INTERVALL_DURATION_MS,
+    PREP_TIME_SEC,
+    LONG_PAUSE_FACTOR,
+  } from "../App.svelte";
+
   let work = $state(true);
   let currentSeconds = $state(0);
   let currentMinutes = $state(0);
@@ -17,16 +24,16 @@
       clearInterval(timer);
 
       timer = setInterval(() => {
-        if (currentMinutes != 0 && currentSeconds != 0) {
+        if (currentMinutes == 0 && currentSeconds == 0) {
+          clearInterval(timer);
+          resolve();
+        } else {
           if (currentSeconds - 1 < 0) {
             currentMinutes--;
             currentSeconds = 59;
           } else currentSeconds--;
-        } else {
-          clearInterval(timer);
-          resolve();
         }
-      }, 100);
+      }, INTERVALL_DURATION_MS);
     });
   }
 
@@ -35,21 +42,21 @@
     // 10 Minute preperation phase
     // TODO: Replace magic numbers with consts, use same as in TimerSetter
     // TODO: Remove Debug Console.logs
-    await countDown(60, false);
+    await countDown(PREP_TIME_SEC, false);
 
     //DEBUG, remove later
     console.log("PrepPhase ended");
 
     // Handels worksessions and pause durations
     for (let i = 1; i <= sessions; i++) {
-      await countDown(60, true);
+      await countDown(600, true);
       console.log("Work ended");
       if (i < sessions) {
         if (i % 4 == 0) {
-          await countDown(30 * 2.5, false);
+          await countDown(300 * LONG_PAUSE_FACTOR, false);
           console.log("Long Pause ended");
         } else {
-          await countDown(30, false);
+          await countDown(300, false);
           console.log("Pause ended");
         }
       }
