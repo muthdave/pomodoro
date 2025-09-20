@@ -1,6 +1,9 @@
 <script>
-  // Conts to avoid magic numbers
-  const { INTERVALL_DURATION_MS, PREP_TIME_SEC, LONG_PAUSE_FACTOR } = $props();
+  import {
+    INTERVALL_DURATION_MS,
+    PREP_TIME_SEC,
+    LONG_PAUSE_FACTOR,
+  } from "./constants.svelte";
 
   let work = $state(true);
   let currentSeconds = $state(0);
@@ -16,7 +19,6 @@
     //makes sure intervalls do not run paralell
     return new Promise((resolve) => {
       // Makes sure timer is not running
-      // TODO: Set intervalltime back to 1000 ms
       clearInterval(timer);
 
       timer = setInterval(() => {
