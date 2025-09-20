@@ -1,10 +1,6 @@
 <script>
   // Conts to avoid magic numbers
-  import {
-    INTERVALL_DURATION_MS,
-    PREP_TIME_SEC,
-    LONG_PAUSE_FACTOR,
-  } from "../App.svelte";
+  const { INTERVALL_DURATION_MS, PREP_TIME_SEC, LONG_PAUSE_FACTOR } = $props();
 
   let work = $state(true);
   let currentSeconds = $state(0);

@@ -1,5 +1,5 @@
 <script>
-  import { PREP_TIME_SEC, LONG_PAUSE_FACTOR } from "../App.svelte";
+  const { PREP_TIME_SEC, LONG_PAUSE_FACTOR } = $props();
 
   // Runes for Inputs
   let workMin = $state(25);
