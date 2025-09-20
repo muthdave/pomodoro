@@ -2,38 +2,29 @@
   import {
     PREP_TIME_SEC,
     LONG_PAUSE_FACTOR,
+    timerStates,
   } from "./constants.svelte";
 
-  // Runes for Inputs
-  let workMin = $state(25);
-  let sessions = $state(3);
+  // Runes for Display
+  let dispWorkMins = $derived(timerStates.workSecs / 60);
 
-  //Rune for Pause-Time-Calculations, ueses Fractions
-  let pauseValue = $state(5);
+  let dispPauseMins = $derived(Math.trunc(timerStates.pauseSecs / 60));
 
-  //Runes calculating duration of pauses, uses ceil to avoid round errors in edge-cases
-  let roundedPauseValue = $derived(Math.ceil(pauseValue * 100) / 100);
-  let pauseMin = $derived(Math.trunc(roundedPauseValue));
-  let pauseSec = $derived(
-    Math.round(60 * (roundedPauseValue % Math.trunc(roundedPauseValue)))
-  );
+  let dispPauseSecs = $derived(timerStates.pauseSecs - dispPauseMins * 60);
 
   //Rune calculating Time at wich the worksession ends
   let endTime = $derived.by(() => {
     const TIME = Date.now();
 
-    let calcWorkSec = workMin * 60;
-    let calcPauseSec = pauseMin * 60 + pauseSec;
-
-    let longPauses = Math.trunc((sessions - 1) / 4);
-    let calcPauses = sessions - 1 - longPauses;
+    let longPauses = Math.trunc((timerStates.sessions - 1) / 4);
+    let calcPauses = timerStates.sessions - 1 - longPauses;
 
     let calcEndTime = new Date(
       TIME +
         (PREP_TIME_SEC +
-          calcWorkSec * sessions +
-          calcPauseSec * calcPauses +
-          longPauses * (calcPauseSec * LONG_PAUSE_FACTOR)) *
+          timerStates.workSecs * timerStates.sessions +
+          timerStates.pauseSecs * calcPauses +
+          longPauses * (timerStates.pauseSecs * LONG_PAUSE_FACTOR)) *
           1000
     );
 
@@ -45,24 +36,33 @@
 </script>
 
 <!--Sets Duration of Work-Sessions in min-->
-Work Duration: {workMin}<br />
-<input type="range" step="5" min="15" max="55" bind:value={workMin} /><br /><br
-/>
-
-<!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
-Pause Duration {pauseMin}:{pauseSec}<br />
+Work Duration: {dispWorkMins}<br />
 <input
   type="range"
-  step="0.0833"
-  min="3"
-  max="8.008"
-  bind:value={pauseValue}
+  step="300"
+  min="900"
+  max="3300"
+  bind:value={timerStates.workSecs}
+/><br /><br />
+
+<!--Sets Fraction via Slider which then calculates Minutes and Seconds-->
+Pause Duration {dispPauseMins}:{dispPauseSecs}<br />
+<input
+  type="range"
+  step="5"
+  min="180"
+  max="480"
+  bind:value={timerStates.pauseSecs}
 /><br />
 
 <!--Sets number of repetitions-->
 Work Sessions<br />
-<input type="number" bind:value={sessions} defaultValue="3" min="1" /><br /><br
-/>
+<input
+  type="number"
+  bind:value={timerStates.sessions}
+  defaultValue="3"
+  min="1"
+/><br /><br />
 
 <!--Debug: Shows EndTime-->
 <input type="time" value={endTime} readonly />

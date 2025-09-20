@@ -3,6 +3,7 @@
     INTERVALL_DURATION_MS,
     PREP_TIME_SEC,
     LONG_PAUSE_FACTOR,
+    timerStates,
   } from "./constants.svelte";
 
   let work = $state(true);
@@ -47,14 +48,14 @@
 
     // Handels worksessions and pause durations
     for (let i = 1; i <= sessions; i++) {
-      await countDown(600, true);
+      await countDown(timerStates.workSecs, true);
       console.log("Work ended");
       if (i < sessions) {
         if (i % 4 == 0) {
-          await countDown(300 * LONG_PAUSE_FACTOR, false);
+          await countDown(timerStates.pauseSecs * LONG_PAUSE_FACTOR, false);
           console.log("Long Pause ended");
         } else {
-          await countDown(300, false);
+          await countDown(timerStates.pauseSecs, false);
           console.log("Pause ended");
         }
       }
@@ -67,4 +68,6 @@
 :
 {String(currentSeconds).padStart(2, "0")}
 
-<button type="button" onclick={() => cycle(5)}>Click Me!</button>
+<button type="button" onclick={() => cycle(timerStates.sessions)}
+  >Click Me!</button
+>
