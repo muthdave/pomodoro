@@ -1,9 +1,7 @@
 <script>
-  import {
-    PREP_TIME_SEC,
-    LONG_PAUSE_FACTOR,
-    timerStates,
-  } from "./constants.svelte";
+  import { PREP_TIME_SEC, LONG_PAUSE_FACTOR } from "./constants.js";
+
+  import { timerStates } from "./states.svelte.js";
 
   // Runes for Display
   let dispWorkMins = $derived(timerStates.workSecs / 60);
@@ -12,7 +10,7 @@
 
   let dispPauseSecs = $derived(timerStates.pauseSecs - dispPauseMins * 60);
 
-  //Rune calculating Time at wich the worksession ends
+  // Rune calculating Time at wich the worksession ends
   let endTime = $derived.by(() => {
     const TIME = Date.now();
 

@@ -3,8 +3,8 @@
     INTERVALL_DURATION_MS,
     PREP_TIME_SEC,
     LONG_PAUSE_FACTOR,
-    timerStates,
-  } from "./constants.svelte";
+  } from "./constants.js";
+  import { timerStates } from "./states.svelte.js";
 
   let work = $state(true);
   let currentSeconds = $state(0);
@@ -39,11 +39,9 @@
   //Starts the workcycle, async to avoid paralell intervalls
   async function cycle(sessions) {
     // 10 Minute preperation phase
-    // TODO: Replace magic numbers with consts, use same as in TimerSetter
     // TODO: Remove Debug Console.logs
     await countDown(PREP_TIME_SEC, false);
 
-    //DEBUG, remove later
     console.log("PrepPhase ended");
 
     // Handels worksessions and pause durations
@@ -71,3 +69,5 @@
 <button type="button" onclick={() => cycle(timerStates.sessions)}
   >Click Me!</button
 >
+
+<!-- TODO: Add proper controls for timer, lock TimeSetter while timer is running -->

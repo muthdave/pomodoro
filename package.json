@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
+    "accurate-interval": "^1.0.9",
     "tailwindcss": "^4.1.12"
   }
 }
