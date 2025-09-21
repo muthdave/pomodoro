@@ -1,4 +1,5 @@
 <script>
+  import accurateInterval from "accurate-interval";
   import {
     INTERVALL_DURATION_MS,
     PREP_TIME_SEC,
@@ -22,17 +23,21 @@
       // Makes sure timer is not running
       clearInterval(timer);
 
-      timer = setInterval(() => {
-        if (currentMinutes == 0 && currentSeconds == 0) {
-          clearInterval(timer);
-          resolve();
-        } else {
-          if (currentSeconds - 1 < 0) {
-            currentMinutes--;
-            currentSeconds = 59;
-          } else currentSeconds--;
-        }
-      }, INTERVALL_DURATION_MS);
+      timer = accurateInterval(
+        () => {
+          if (currentMinutes == 0 && currentSeconds == 0) {
+            clearInterval(timer);
+            resolve();
+          } else {
+            if (currentSeconds - 1 < 0) {
+              currentMinutes--;
+              currentSeconds = 59;
+            } else currentSeconds--;
+          }
+        },
+        INTERVALL_DURATION_MS,
+        { aligned: true, immediate: true }
+      );
     });
   }
 
