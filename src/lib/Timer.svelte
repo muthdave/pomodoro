@@ -4,8 +4,8 @@
     INTERVALL_DURATION_MS,
     PREP_TIME_SEC,
     LONG_PAUSE_FACTOR,
-  } from "./constants.js";
-  import { timerStates } from "./states.svelte.js";
+  } from "../stores/constants.js";
+  import { timerStates } from "../stores/states.svelte.js";
 
   let work = $state(true);
   let currentSeconds = $state(0);
@@ -14,6 +14,7 @@
 
   // flag for control
   let isStopped = Boolean(false);
+  let getsSkipped = Boolean(false);
 
   // counts down from given time, mode for later use in timer
   function countDown(seconds, mode) {
@@ -28,12 +29,17 @@
 
       timer = accurateInterval(
         () => {
-          // Aborts Intervall
           if (isStopped) {
+            // Aborts Intervall
             timer.clear();
-            console.log("Aborts");
             resolve("Aborted");
+          } else if (getsSkipped) {
+            // Skips current phase
+            getsSkipped = false;
+            timer.clear();
+            resolve();
           } else if (currentMinutes == 0 && currentSeconds == 0) {
+            // Ends timer if time runs out
             timer.clear();
             resolve();
           } else {
@@ -88,7 +94,10 @@
     timer.clear();
     currentSeconds = 0;
     currentMinutes = 10;
-    console.log(isStopped);
+  }
+
+  function skipIntervall() {
+    getsSkipped = true;
   }
 </script>
 
@@ -108,6 +117,12 @@
     class="border-2 border-black px-2 py-1 cursor-pointer"
   >
     Stop Timer
+  </button>
+  <button
+    onclick={() => skipIntervall()}
+    class="border-2 border-black px-2 py-1 cursor-pointer"
+  >
+    Skip current phase
   </button>
 
   <!-- TODO: Expand control over timer: pause, resume, skip single interval -->

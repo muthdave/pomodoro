@@ -1,7 +1,7 @@
 <script>
-  import { PREP_TIME_SEC, LONG_PAUSE_FACTOR } from "./constants.js";
+  import { PREP_TIME_SEC, LONG_PAUSE_FACTOR } from "../stores/constants.js";
 
-  import { timerStates } from "./states.svelte.js";
+  import { timerStates } from "../stores/states.svelte.js";
 
   // Runes for Display
   let dispWorkMins = $derived(timerStates.workSecs / 60);
