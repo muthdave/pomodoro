@@ -7,21 +7,26 @@
   } from "../stores/constants.js";
   import { timerStates } from "../stores/states.svelte.js";
 
+  // Handles timer duration and correct display of numbers
+  let currentSecondsRemaining = $state(0);
+  let dispMinutes = $derived(Math.trunc(currentSecondsRemaining / 60));
+  let dispSeconds = $derived(currentSecondsRemaining - dispMinutes * 60);
+
+  // Used for styling -> later
   let work = $state(true);
-  let currentSeconds = $state(0);
-  let currentMinutes = $state(10);
+
+  // For more control over the timer
   let timer;
 
-  // flag for control
+  // Flag for control
   let isStopped = Boolean(false);
   let getsSkipped = Boolean(false);
+  let paused = Boolean(false);
 
   // counts down from given time, mode for later use in timer
   function countDown(seconds, mode) {
     work = mode;
-    currentMinutes = Math.trunc(seconds / 60);
-    currentSeconds = seconds - currentMinutes * 60;
-
+    currentSecondsRemaining = seconds;
     // makes sure intervalls do not run paralell
     return new Promise((resolve) => {
       // Makes sure timer is not running
@@ -29,7 +34,8 @@
 
       timer = accurateInterval(
         () => {
-          if (isStopped) {
+          if (paused) {
+          } else if (isStopped) {
             // Aborts Intervall
             timer.clear();
             resolve("Aborted");
@@ -38,16 +44,12 @@
             getsSkipped = false;
             timer.clear();
             resolve();
-          } else if (currentMinutes == 0 && currentSeconds == 0) {
+          } else if (currentSecondsRemaining == 0) {
             // Ends timer if time runs out
             timer.clear();
             resolve();
           } else {
-            console.log("Running");
-            if (currentSeconds - 1 < 0) {
-              currentMinutes--;
-              currentSeconds = 59;
-            } else currentSeconds--;
+            currentSecondsRemaining--;
           }
         },
         INTERVALL_DURATION_MS,
@@ -58,16 +60,13 @@
 
   // Starts the workcycle, async to avoid paralell intervalls
   async function cycle(sessions) {
-    // Resets isStopped to avoid aborting
+    // Resets control flags for secure start
     isStopped = false;
-
-    // TODO: Remove Debug Console.logs
+    paused = false;
 
     // 10 Minute preperation phase
     let CDStatus = await countDown(PREP_TIME_SEC, false);
     if (CDStatus == "Aborted") return; // Aborts whole cycle
-
-    console.log("PrepPhase ended");
 
     // Handels worksessions and pause durations
     for (let i = 1; i <= sessions; i++) {
@@ -85,26 +84,32 @@
         }
         if (CDStatus == "Aborted") return; // Aborts whole cycle
       }
-      console.log(i);
     }
   }
 
   function stopIntervall() {
     isStopped = true;
     timer.clear();
-    currentSeconds = 0;
-    currentMinutes = 10;
+    currentSecondsRemaining = PREP_TIME_SEC;
   }
 
   function skipIntervall() {
     getsSkipped = true;
   }
+
+  function pauseIntervall() {
+    paused = true;
+  }
+
+  function continueIntervall() {
+    paused = false;
+  }
 </script>
 
 <div class="border-2 w-fit p-4">
-  {String(currentMinutes).padStart(2, "0")}
+  {String(dispMinutes).padStart(2, "0")}
   :
-  {String(currentSeconds).padStart(2, "0")}
+  {String(dispSeconds).padStart(2, "0")}
 
   <br /><button
     onclick={() => cycle(timerStates.sessions)}
@@ -124,6 +129,17 @@
   >
     Skip current phase
   </button>
+  <button
+    onclick={() => pauseIntervall()}
+    class="border-2 border-black px-2 py-1 cursor-pointer"
+  >
+    Pause current phase
+  </button>
 
-  <!-- TODO: Expand control over timer: pause, resume, skip single interval -->
+  <button
+    onclick={() => continueIntervall()}
+    class="border-2 border-black px-2 py-1 cursor-pointer"
+  >
+    Resume current phase
+  </button>
 </div>
