@@ -95,6 +95,7 @@
 
   function skipIntervall() {
     getsSkipped = true;
+    paused = false;
   }
 
   function pauseIntervall() {
@@ -107,6 +108,7 @@
 </script>
 
 <div class="border-2 w-fit p-4">
+  <!--TODO: Encapsulate timer controls further-->
   {String(dispMinutes).padStart(2, "0")}
   :
   {String(dispSeconds).padStart(2, "0")}
