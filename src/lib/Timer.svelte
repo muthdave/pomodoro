@@ -5,15 +5,22 @@
     PREP_TIME_SEC,
     LONG_PAUSE_FACTOR,
   } from "../stores/constants.js";
-  import { timerStates } from "../stores/states.svelte.js";
+  import { timerConfigStates, timerStates } from "../stores/states.svelte.js";
 
-  // Handles timer duration and correct display of numbers
-  let currentSecondsRemaining = $state(0);
-  let dispMinutes = $derived(Math.trunc(currentSecondsRemaining / 60));
-  let dispSeconds = $derived(currentSecondsRemaining - dispMinutes * 60);
+  // Handles correct display of numbers
+  let dispCurrentMinutes = $derived(
+    Math.trunc(timerStates.currentSecondsRemaining / 60)
+  );
+  let dispCurrentSeconds = $derived(
+    timerStates.currentSecondsRemaining - dispCurrentMinutes * 60
+  );
 
-  // Used for styling -> later
-  let work = $state(true);
+  let dispNextMinutes = $derived(
+    Math.trunc(timerStates.nextSecondsRemaining / 60)
+  );
+  let dispNextSeconds = $derived(
+    timerStates.nextSecondsRemaining - dispNextMinutes * 60
+  );
 
   // For more control over the timer
   let timer;
@@ -24,9 +31,10 @@
   let paused = Boolean(false);
 
   // counts down from given time, mode for later use in timer
-  function countDown(seconds, mode) {
-    work = mode;
-    currentSecondsRemaining = seconds;
+  function countDown(currentSeconds, nextSeconds, mode) {
+    timerStates.work = mode;
+    timerStates.currentSecondsRemaining = currentSeconds;
+    timerStates.nextSecondsRemaining = nextSeconds;
     // makes sure intervalls do not run paralell
     return new Promise((resolve) => {
       // Makes sure timer is not running
@@ -44,12 +52,12 @@
             getsSkipped = false;
             timer.clear();
             resolve();
-          } else if (currentSecondsRemaining == 0) {
+          } else if (timerStates.currentSecondsRemaining == 0) {
             // Ends timer if time runs out
             timer.clear();
             resolve();
           } else {
-            currentSecondsRemaining--;
+            timerStates.currentSecondsRemaining--;
           }
         },
         INTERVALL_DURATION_MS,
@@ -65,22 +73,46 @@
     paused = false;
 
     // 10 Minute preperation phase
-    let CDStatus = await countDown(PREP_TIME_SEC, false);
+    let CDStatus = await countDown(
+      PREP_TIME_SEC,
+      timerConfigStates.workSecs,
+      false
+    );
     if (CDStatus == "Aborted") return; // Aborts whole cycle
 
     // Handels worksessions and pause durations
     for (let i = 1; i <= sessions; i++) {
-      CDStatus = await countDown(timerStates.workSecs, true);
+      console.log(
+        i + 1 === sessions
+          ? 0
+          : (i + 1) % 4 === 0
+            ? timerConfigStates.pauseSecs * LONG_PAUSE_FACTOR
+            : timerConfigStates.pauseSecs
+      );
+      CDStatus = await countDown(
+        timerConfigStates.workSecs,
+        i + 1 === sessions
+          ? 0
+          : i % 4 === 0
+            ? timerConfigStates.pauseSecs * LONG_PAUSE_FACTOR
+            : timerConfigStates.pauseSecs,
+        true
+      );
       if (CDStatus == "Aborted") return; // Aborts whole cycle
 
       if (i < sessions) {
         if (i % 4 == 0) {
           CDStatus = await countDown(
-            timerStates.pauseSecs * LONG_PAUSE_FACTOR,
+            timerConfigStates.pauseSecs * LONG_PAUSE_FACTOR,
+            timerConfigStates.workSecs,
             false
           );
         } else {
-          CDStatus = await countDown(timerStates.pauseSecs, false);
+          CDStatus = await countDown(
+            timerConfigStates.pauseSecs,
+            timerConfigStates.workSecs,
+            false
+          );
         }
         if (CDStatus == "Aborted") return; // Aborts whole cycle
       }
@@ -90,7 +122,7 @@
   function stopIntervall() {
     isStopped = true;
     timer.clear();
-    currentSecondsRemaining = PREP_TIME_SEC;
+    timerStates.currentSecondsRemaining = PREP_TIME_SEC;
   }
 
   function skipIntervall() {
@@ -107,14 +139,19 @@
   }
 </script>
 
-<div class="border-2 w-fit p-4">
+<div class="border-2 w-fit p-4 m-2">
   <!--TODO: Encapsulate timer controls further-->
-  {String(dispMinutes).padStart(2, "0")}
+  {String(dispCurrentMinutes).padStart(2, "0")}
   :
-  {String(dispSeconds).padStart(2, "0")}
+  {String(dispCurrentSeconds).padStart(2, "0")}
+
+  |
+  {String(dispNextMinutes).padStart(2, "0")}
+  :
+  {String(dispNextSeconds).padStart(2, "0")}
 
   <br /><button
-    onclick={() => cycle(timerStates.sessions)}
+    onclick={() => cycle(timerConfigStates.sessions)}
     class="border-2 border-black px-2 py-1 cursor-pointer"
   >
     Start Timer
