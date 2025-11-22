@@ -4,11 +4,10 @@ A simple, retro-inspired Pomodoro Timer to help you work efficiently and stay fo
 
 # Current Features (Work in Progress)
 
-TBA — Work in progress
+- Set custom work and break intervals
 
 # Planned Features
 
-- Set custom work and break intervals
 - A to-do list that organizes your Pomodoros (tasks) in your preferred order
 - Built-in music controls — stay in fullscreen mode with fewer distractions
 - Motivational Quotes!
