@@ -126,8 +126,10 @@
   }
 
   function skipIntervall() {
+    if(!isStopped){
     getsSkipped = true;
     paused = false;
+    }
   }
 
   function pauseIntervall() {
